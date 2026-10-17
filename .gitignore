@@ -1,0 +1,6 @@
+/bin/
+/profiles/
+/graphify-out/
+*.test
+coverage.out
+.DS_Store
