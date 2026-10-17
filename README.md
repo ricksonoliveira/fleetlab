@@ -4,6 +4,8 @@ FleetLab is a small Go portfolio project for exploring fleet telemetry, TCP conn
 
 The first slice is deliberately small: no database, Kafka, Kubernetes, external Go dependencies, or UI. It is a learning scaffold, with a real end-to-end path and tests for its concurrency and protocol boundaries. Metrics and screenshots below are placeholders until captured on real hardware.
 
+The goal of this project is to make a study case of GoLang and to extract the best of the language: Concurrency, Parallelism and Performance.
+
 ## Run locally
 
 Use Go 1.22 or newer and `make`. Prefer a currently supported Go release. The scaffold was validated with Go 1.27.2 on macOS ARM64; the exact official archive installation commands are in [the macOS setup record](docs/install-macos.md). No dependency download is needed. `GOTOOLCHAIN=local` prevents Go from fetching another toolchain automatically.
