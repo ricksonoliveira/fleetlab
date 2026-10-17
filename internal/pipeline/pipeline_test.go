@@ -20,6 +20,7 @@ func TestBoundedQueueAndCompletion(t *testing.T) {
 		case <-ctx.Done():
 			return ctx.Err()
 		}
+
 		select {
 		case <-release:
 			return nil
@@ -27,32 +28,49 @@ func TestBoundedQueueAndCompletion(t *testing.T) {
 			return ctx.Err()
 		}
 	}, stats)
-	defer func() { cancel(); p.Wait() }()
+	defer func() {
+		cancel()
+		p.Wait()
+	}()
+
 	results := make(chan protocol.Ack, 3)
-	job := Job{Context: ctx, Message: protocol.Telemetry{ID: "1"}, Results: results}
+	job := Job{
+		Context: ctx,
+		Message: protocol.Telemetry{
+			ID: "1",
+		},
+		Results: results,
+	}
 	if err := p.Submit(job); err != nil {
 		t.Fatal(err)
 	}
+
 	select {
 	case <-started:
 	case <-time.After(time.Second):
 		t.Fatal("processor did not start")
 	}
+
 	select {
 	case <-results:
 		t.Fatal("acknowledged before processing completed")
 	default:
 	}
+
 	if err := p.Submit(job); err != nil {
 		t.Fatal(err)
 	}
+
 	blocked, stop := context.WithTimeout(ctx, 30*time.Millisecond)
 	defer stop()
+
 	job.Context = blocked
 	if err := p.Submit(job); !errors.Is(err, context.DeadlineExceeded) {
 		t.Fatalf("full queue did not block until cancellation: %v", err)
 	}
+
 	close(release)
+
 	select {
 	case ack := <-results:
 		if ack.Status != "processed" || ack.ProcessedAt.IsZero() || stats.Processed.Load() < 1 {
@@ -69,14 +87,28 @@ func TestProcessingFailureAcknowledgment(t *testing.T) {
 	p := New(ctx, 1, 1, func(context.Context, protocol.Telemetry) error {
 		return errors.New("private implementation detail")
 	}, stats)
-	defer func() { cancel(); p.Wait() }()
+	defer func() {
+		cancel()
+		p.Wait()
+	}()
+
 	results := make(chan protocol.Ack, 1)
-	if err := p.Submit(Job{Context: ctx, Message: protocol.Telemetry{ID: "failed"}, Results: results}); err != nil {
+	if err := p.Submit(Job{
+		Context: ctx,
+		Message: protocol.Telemetry{
+			ID: "failed",
+		},
+		Results: results,
+	}); err != nil {
 		t.Fatal(err)
 	}
+
 	select {
 	case ack := <-results:
-		if ack.Status != "error" || ack.Error != "processing failed" || stats.ProcessingErrors.Load() != 1 || stats.Processed.Load() != 0 {
+		if ack.Status != "error" ||
+			ack.Error != "processing failed" ||
+			stats.ProcessingErrors.Load() != 1 ||
+			stats.Processed.Load() != 0 {
 			t.Fatalf("unexpected failure acknowledgment: %+v", ack)
 		}
 	case <-time.After(time.Second):

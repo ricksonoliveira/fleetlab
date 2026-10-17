@@ -13,5 +13,6 @@ func Process(ctx context.Context, message protocol.Telemetry) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+
 	return message.Validate()
 }

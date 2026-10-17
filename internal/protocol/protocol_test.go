@@ -30,7 +30,9 @@ func TestReaderLimitsAndFraming(t *testing.T) {
 			}
 		})
 	}
+
 	r := NewReader(io.MultiReader(strings.NewReader("{\"a\":"), strings.NewReader("1}\n{}\n")), 32)
+
 	for _, want := range []string{"{\"a\":1}\n", "{}\n"} {
 		line, err := r.ReadLine()
 		if err != nil || string(line) != want {
@@ -43,6 +45,7 @@ func TestDecodeTelemetry(t *testing.T) {
 	if _, err := DecodeTelemetry([]byte(validJSON)); err != nil {
 		t.Fatal(err)
 	}
+
 	for _, input := range []string{
 		"not-json", "null", "{}", validJSON + " {}",
 		strings.Replace(validJSON, `"speed_kph":40`, `"speed_kph":-1`, 1),
@@ -55,7 +58,13 @@ func TestDecodeTelemetry(t *testing.T) {
 			t.Errorf("accepted invalid telemetry: %s", input)
 		}
 	}
-	m := Telemetry{ID: "1", VehicleID: "v", SentAt: time.Now(), SpeedKPH: math.NaN()}
+
+	m := Telemetry{
+		ID:        "1",
+		VehicleID: "v",
+		SentAt:    time.Now(),
+		SpeedKPH:  math.NaN(),
+	}
 	if m.Validate() == nil {
 		t.Fatal("accepted non-finite speed")
 	}
@@ -64,6 +73,7 @@ func TestDecodeTelemetry(t *testing.T) {
 func BenchmarkDecodeTelemetry(b *testing.B) {
 	line := []byte(validJSON)
 	b.ReportAllocs()
+
 	for i := 0; i < b.N; i++ {
 		if _, err := DecodeTelemetry(line); err != nil {
 			b.Fatal(err)

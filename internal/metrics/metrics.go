@@ -30,9 +30,14 @@ type Snapshot struct {
 // Snapshot reads each counter atomically; the group is not a transaction.
 func (c *Counters) Snapshot() Snapshot {
 	return Snapshot{
-		Accepted: c.Accepted.Load(), Rejected: c.Rejected.Load(), Active: c.Active.Load(),
-		Received: c.Received.Load(), Processed: c.Processed.Load(),
-		ProcessingErrors: c.ProcessingErrors.Load(), ProtocolErrors: c.ProtocolErrors.Load(),
-		IOErrors: c.IOErrors.Load(), Acknowledged: c.Acknowledged.Load(),
+		Accepted:         c.Accepted.Load(),
+		Rejected:         c.Rejected.Load(),
+		Active:           c.Active.Load(),
+		Received:         c.Received.Load(),
+		Processed:        c.Processed.Load(),
+		ProcessingErrors: c.ProcessingErrors.Load(),
+		ProtocolErrors:   c.ProtocolErrors.Load(),
+		IOErrors:         c.IOErrors.Load(),
+		Acknowledged:     c.Acknowledged.Load(),
 	}
 }
